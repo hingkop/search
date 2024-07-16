@@ -1,0 +1,109 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>News Search</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    input[type="text"], button {
+      padding: 10px;
+      font-size: 16px;
+    }
+    button {
+      cursor: pointer;
+    }
+    #newsContainer {
+      margin-top: 20px;
+    }
+    .news-item {
+      border-bottom: 1px solid #ddd;
+      padding: 10px;
+    }
+    .news-item h2 {
+      margin-top: 0;
+    }
+    .news-item p {
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>News Search</h1>
+    <input type="text" id="searchQuery" placeholder="Search for news">
+    <button onclick="searchNews()">Search</button>
+    <div id="newsContainer"></div>
+  </div>
+
+  <script>
+    async function fetchNews() {
+      try {
+        const response = await fetch('/api/articles');
+        if (!response.ok) {
+          throw new Error('Failed to fetch news');
+        }
+        const news = await response.json();
+        displayNews(news);
+      } catch (error) {
+        console.error('Error fetching news:', error.message);
+        alert('Failed to fetch news. Please try again later.');
+      }
+    }
+
+    async function searchNews() {
+      const query = document.getElementById('searchQuery').value.trim();
+      try {
+        const response = await fetch(`/api/search?query=${encodeURIComponent(query)}`);
+        if (!response.ok) {
+          throw new Error('Search failed');
+        }
+        const news = await response.json();
+        displayNews(news);
+      } catch (error) {
+        console.error('Search error:', error.message);
+        alert('Search failed. Please try again later.');
+      }
+    }
+
+    function displayNews(news) {
+      const container = document.getElementById('newsContainer');
+      container.innerHTML = '';
+      news.forEach(item => {
+        const div = document.createElement('div');
+        div.classList.add('news-item');
+        div.innerHTML = `
+          <h2>${item.title}</h2>
+          <p><strong>Press:</strong> ${item.press}</p>
+          <p><strong>Journalist:</strong> ${item.journalist}</p>
+          <p><strong>Date:</strong> ${new Date(item.datetime).toLocaleString()}</p>
+          <p>${item.content}</p>
+          <a href="${item.href}" target="_blank">Read more</a>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // 페이지 로드 시 모든 뉴스 불러오기
+    window.onload = fetchNews;
+  </script>
+</body>
+</html>
