@@ -24,15 +24,21 @@ app.use(bodyParser.json());
 
 // index.html 파일 제공
 app.get('/', (req, res) => {
-  // index.html 파일이 현재 파일과 같은 경로에 있는 경우
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // 뉴스 데이터 가져오기 엔드포인트
 app.get('/api/articles', async (req, res) => {
+  const { page = 1, limit = 10 } = req.query;
+  const offset = (page - 1) * limit;
+
   try {
-    const result = await pool.query('SELECT * FROM articles');
-    res.json(result.rows);
+    const totalResult = await pool.query('SELECT COUNT(*) FROM articles');
+    const totalItems = totalResult.rows[0].count;
+    const totalPages = Math.ceil(totalItems / limit);
+
+    const result = await pool.query('SELECT * FROM articles ORDER BY datetime DESC LIMIT $1 OFFSET $2', [limit, offset]);
+    res.json({ items: result.rows, totalPages });
   } catch (err) {
     console.error('Error fetching news:', err);
     res.status(500).send('Error fetching news');
@@ -41,17 +47,32 @@ app.get('/api/articles', async (req, res) => {
 
 // 뉴스 검색 엔드포인트
 app.get('/api/search', async (req, res) => {
-  const { query } = req.query;
+  const { query, page = 1, limit = 10 } = req.query;
+  const offset = (page - 1) * limit;
+
   try {
-    const result = await pool.query(
-      `SELECT * FROM articles 
+    const totalResult = await pool.query(
+      `SELECT COUNT(*) FROM articles 
        WHERE title ILIKE $1 
           OR content ILIKE $2 
           OR press ILIKE $3 
           OR journalist ILIKE $4`,
       [`%${query}%`, `%${query}%`, `%${query}%`, `%${query}%`]
     );
-    res.json(result.rows);
+    const totalItems = totalResult.rows[0].count;
+    const totalPages = Math.ceil(totalItems / limit);
+
+    const result = await pool.query(
+      `SELECT * FROM articles 
+       WHERE title ILIKE $1 
+          OR content ILIKE $2 
+          OR press ILIKE $3 
+          OR journalist ILIKE $4 
+       ORDER BY datetime DESC
+       LIMIT $5 OFFSET $6`,
+      [`%${query}%`, `%${query}%`, `%${query}%`, `%${query}%`, limit, offset]
+    );
+    res.json({ items: result.rows, totalPages });
   } catch (err) {
     console.error('Error searching news:', err);
     res.status(500).send('Error searching news');

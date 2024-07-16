@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -44,40 +43,56 @@
     .news-item p {
       margin-bottom: 5px;
     }
+    .pagination {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .pagination button {
+      margin: 0 5px;
+      padding: 10px 20px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>News Search</h1>
     <input type="text" id="searchQuery" placeholder="Search for news">
-    <button onclick="searchNews()">Search</button>
+    <button onclick="searchNews(1)">Search</button>
     <div id="newsContainer"></div>
+    <div class="pagination" id="pagination"></div>
   </div>
 
   <script>
-    async function fetchNews() {
+    const itemsPerPage = 10;
+    let currentPage = 1;
+    let currentQuery = '';
+
+    async function fetchNews(page = 1) {
       try {
-        const response = await fetch('/api/articles');
+        const response = await fetch(`/api/articles?page=${page}&limit=${itemsPerPage}`);
         if (!response.ok) {
           throw new Error('Failed to fetch news');
         }
         const news = await response.json();
-        displayNews(news);
+        displayNews(news.items);
+        updatePagination(news.totalPages, page);
       } catch (error) {
         console.error('Error fetching news:', error.message);
         alert('Failed to fetch news. Please try again later.');
       }
     }
 
-    async function searchNews() {
-      const query = document.getElementById('searchQuery').value.trim();
+    async function searchNews(page = 1) {
+      currentQuery = document.getElementById('searchQuery').value.trim();
+      currentPage = page;
       try {
-        const response = await fetch(`/api/search?query=${encodeURIComponent(query)}`);
+        const response = await fetch(`/api/search?query=${encodeURIComponent(currentQuery)}&page=${page}&limit=${itemsPerPage}`);
         if (!response.ok) {
           throw new Error('Search failed');
         }
         const news = await response.json();
-        displayNews(news);
+        displayNews(news.items);
+        updatePagination(news.totalPages, page);
       } catch (error) {
         console.error('Search error:', error.message);
         alert('Search failed. Please try again later.');
@@ -102,8 +117,56 @@
       });
     }
 
+    function updatePagination(totalPages, currentPage) {
+      const pagination = document.getElementById('pagination');
+      pagination.innerHTML = '';
+
+      if (currentPage > 1) {
+        const prevButton = document.createElement('button');
+        prevButton.textContent = 'Previous';
+        prevButton.onclick = () => {
+          if (currentQuery) {
+            searchNews(currentPage - 1);
+          } else {
+            fetchNews(currentPage - 1);
+          }
+        };
+        pagination.appendChild(prevButton);
+      }
+
+      for (let i = 1; i <= totalPages; i++) {
+        const pageButton = document.createElement('button');
+        pageButton.textContent = i;
+        if (i === currentPage) {
+          pageButton.disabled = true;
+        } else {
+          pageButton.onclick = () => {
+            if (currentQuery) {
+              searchNews(i);
+            } else {
+              fetchNews(i);
+            }
+          };
+        }
+        pagination.appendChild(pageButton);
+      }
+
+      if (currentPage < totalPages) {
+        const nextButton = document.createElement('button');
+        nextButton.textContent = 'Next';
+        nextButton.onclick = () => {
+          if (currentQuery) {
+            searchNews(currentPage + 1);
+          } else {
+            fetchNews(currentPage + 1);
+          }
+        };
+        pagination.appendChild(nextButton);
+      }
+    }
+
     // 페이지 로드 시 모든 뉴스 불러오기
-    window.onload = fetchNews;
+    window.onload = () => fetchNews(currentPage);
   </script>
 </body>
 </html>
