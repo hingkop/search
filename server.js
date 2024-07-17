@@ -64,7 +64,7 @@ app.get('/api/search', async (req, res) => {
           OR content ILIKE $2 
           OR press ILIKE $3 
           OR journalist ILIKE $4 
-       ORDER BY datetime DESC
+       ORDER BY id DESC
        LIMIT $5 OFFSET $6`,
       [`%${query}%`, `%${query}%`, `%${query}%`, `%${query}%`, limit, offset]
     );

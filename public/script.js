@@ -63,7 +63,7 @@ function displayNewsDetail(index) {
   document.getElementById('detailTitle').innerText = item.title;
   document.getElementById('detailPress').innerText = item.press;
   document.getElementById('detailJournalist').innerText = item.journalist;
-  document.getElementById('detailDate').innerText = new Date(item.datetime).toLocaleString();
+  document.getElementById('detailDate').innerText = item.datetime;
   document.getElementById('detailContent').innerText = item.content;
   document.getElementById('detailLink').href = item.href;
 }
