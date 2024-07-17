@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>네이버 뉴스 검색</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>뉴스 검색</h1>
+    <input type="text" id="searchQuery" placeholder="Search for news">
+    <button onclick="searchNews(1)">검색</button>
+    <div id="newsContainer"></div>
+    <div class="pagination" id="pagination"></div>
+    <div class="news-detail" id="newsDetail">
+      <button class="back-button" onclick="goBack()">돌아가기</button>
+      <h2 id="detailTitle"></h2>
+      <p><strong>언론사:</strong> <span id="detailPress"></span></p>
+      <p><strong>기자:</strong> <span id="detailJournalist"></span></p>
+      <p><strong>날짜:</strong> <span id="detailDate"></span></p>
+      <p id="detailContent"></p>
+      <a id="detailLink" href="#" target="_blank">기사 원본 보기</a>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

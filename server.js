@@ -21,11 +21,7 @@ const pool = new Pool({
 
 // 미들웨어 설정
 app.use(bodyParser.json());
-
-// index.html 파일 제공
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
+app.use(express.static(path.join(__dirname, 'public')));
 
 // 뉴스 데이터 가져오기 엔드포인트
 app.get('/api/articles', async (req, res) => {
